@@ -14,6 +14,7 @@ const router = jsonServer.router(__dirname + '/db.json')
 const middlewares = jsonServer.defaults({
   static: __dirname + '/public'
 })
+const disabledMethods = ['POST', 'PUT', 'PATCH', 'DELETE'];
 
 // /!\ Bind the router db to the app
 server.db = router.db
@@ -24,6 +25,13 @@ Object.defineProperty(authenticationMiddlewares, 'rewriter', { value: guards.rew
 server.use(middlewares)
 server.use(authenticationMiddlewares)
 server.use(bookValidation.middleware)
+server.use(function (req, res, next) {
+  if (disabledMethods.includes(req.method)) {
+    return res.status(200).json(req.body);
+  }
+
+  next()
+})
 server.use(router)
 
 const port = process.env.PORT || 4730
